@@ -176,6 +176,36 @@ echo "N" > .claude/task/$(cat .claude/task/.current-task)/.workflow-step
 
 ---
 
+## 步骤 0: 历史学习检查（推荐）
+
+> 在开始任何任务前，先检查是否有相关的历史学习
+
+**检查项目记忆和学习日志：**
+
+```bash
+# 读取项目记忆（跨会话持久化）
+cat MEMORY.md
+
+# 检查学习日志目录
+cat .learnings/LEARNINGS.md
+cat .learnings/ERRORS.md
+```
+
+**文件说明：**
+
+| 文件 | 作用 |
+|------|------|
+| `MEMORY.md` | 项目级跨会话记忆，存储重要约定和规范 |
+| `.learnings/LEARNINGS.md` | 学习记录，纠正和最佳实践 |
+| `.learnings/ERRORS.md` | 错误记录和解决方案 |
+
+**历史学习的价值：**
+- 避免重复犯同样的错误
+- 复用已验证的解决方案
+- 遵循项目特定的最佳实践
+
+---
+
 ## 步骤 1: 需求理解 (最重要)
 
 > `echo "1" > .claude/task/$(cat .claude/task/.current-task)/.workflow-step`
@@ -991,6 +1021,96 @@ npm run lint
 → 编写测试用例
 → 执行测试
 → 输出测试报告
+
+## [步骤 8] 学习记录（可选）
+老板，评估是否有值得记录的学习...
+→ 检查是否有非显而易见的解决方案
+→ 检查是否有用户纠正
+→ 记录到 .learnings/ 目录
+```
+
+---
+
+## 步骤 8: 学习记录（推荐）
+
+> 工作流完成后，记录有价值的学习
+
+**何时记录学习：**
+- 发现非显而易见的解决方案
+- 遇到意外错误并解决
+- 用户纠正了你的理解
+- 发现项目特定的最佳实践
+- 找到更好的实现方法
+
+### 8.1 学习记录格式
+
+**记录到 `.learnings/LEARNINGS.md`：**
+
+```markdown
+## [LRN-YYYYMMDD-XXX] category
+
+**Logged**: ISO-8601 timestamp
+**Priority**: low | medium | high
+**Status**: pending
+**Area**: frontend | backend | infra | tests | docs | config
+
+### Summary
+一句话描述学到了什么
+
+### Details
+完整上下文：发生了什么、哪里错了、什么是正确的
+
+### Suggested Action
+具体的修复或改进建议
+
+### Metadata
+- Source: conversation | error | user_feedback
+- Related Files: path/to/file.ext
+- Tags: tag1, tag2
+```
+
+### 8.2 错误记录格式
+
+**记录到 `.learnings/ERRORS.md`：**
+
+```markdown
+## [ERR-YYYYMMDD-XXX] command_name
+
+**Logged**: ISO-8601 timestamp
+**Priority**: high
+**Status**: pending
+**Area**: backend
+
+### Summary
+简要描述什么失败了
+
+### Error
+```
+实际错误信息
+```
+
+### Context
+- 尝试的命令
+- 环境详情
+
+### Suggested Fix
+可能的解决方案
+```
+
+### 8.3 学习提升
+
+**当学习具有广泛适用性时，提升到持久化文件：**
+
+| 学习类型 | 提升目标 |
+|----------|----------|
+| 项目约定 | CLAUDE.md |
+| 工作流规则 | AGENTS.md |
+| 行为准则 | 记忆系统 |
+
+**提升后更新学习状态：**
+```markdown
+**Status**: promoted
+**Promoted**: CLAUDE.md
 ```
 
 ---
