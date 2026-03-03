@@ -4,10 +4,6 @@
 # Claude Code local settings
 .claude/
 
-# Local configuration files
-settings.local.json
-config.local.json
-*.local.json
 
 # Logs
 *.log
