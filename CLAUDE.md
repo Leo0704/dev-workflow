@@ -1,10 +1,10 @@
-# Auto-Agent 项目规范
+# Dev-Workflow 项目规范
 
 本文档包含项目的关键约定和规范，供 AI 助手参考。
 
 ## 项目概述
 
-这是一个 Claude Code 工作流增强项目，提供结构化的开发工作流和自我改进能力。
+这是一个 Claude Code 开发工作流增强插件，提供结构化的9步开发流程。
 
 ## 核心功能
 
@@ -14,9 +14,9 @@
 
 ### 2. 学习日志系统
 - `MEMORY.md` - 项目级跨会话记忆，存储重要约定和规范
-- `.claude/learnings/LEARNINGS.md` - 记录学习、纠正、最佳实践
-- `.claude/learnings/ERRORS.md` - 记录错误和解决方案
-- `.claude/learnings/FEATURE_REQUESTS.md` - 记录功能请求
+- `learnings/LEARNINGS.md` - 记录学习、纠正、最佳实践
+- `learnings/ERRORS.md` - 记录错误和解决方案
+- `learnings/FEATURE_REQUESTS.md` - 记录功能请求
 
 ## 目录结构
 
@@ -30,7 +30,7 @@ auto-agent/
 │   │   ├── prd.pdf         # 需求文档
 │   │   └── .workflow-step  # 工作流状态
 │   └── .current-task       # 当前任务标识
-├── .claude/learnings/             # 学习日志
+├── learnings/             # 学习日志
 │   ├── LEARNINGS.md
 │   ├── ERRORS.md
 │   └── FEATURE_REQUESTS.md
@@ -58,7 +58,7 @@ auto-agent/
 | UserPromptSubmit | 用户提交提示 | 检查需求 |
 | PreToolUse | 工具使用前 | 检查文件边界和工作流步骤 |
 | Stop | 会话结束 | 代码审核 + 任务续接提醒 |
-| PostToolUse(Bash) | Bash命令后 | 错误检测，提醒记录到 .claude/learnings/ |
+| PostToolUse(Bash) | Bash命令后 | 错误检测，提醒记录到 learnings/ |
 
 ## 开发规范
 
@@ -86,9 +86,9 @@ cat task/$(cat task/.current-task)/.workflow-step
 # 记录学习到 MEMORY.md（重要约定）
 echo "- 新约定内容" >> MEMORY.md
 
-# 记录学习到 .claude/learnings/
-echo "## [LRN-$(date +%Y%m%d)-001] category" >> .claude/learnings/LEARNINGS.md
+# 记录学习到 learnings/
+echo "## [LRN-$(date +%Y%m%d)-001] category" >> learnings/LEARNINGS.md
 
 # 记录错误
-echo "## [ERR-$(date +%Y%m%d)-001] command" >> .claude/learnings/ERRORS.md
+echo "## [ERR-$(date +%Y%m%d)-001] command" >> learnings/ERRORS.md
 ```

@@ -1,4 +1,4 @@
-# Auto-Agent 项目记忆
+# Dev-Workflow 项目记忆
 
 > 详细规范见 CLAUDE.md
 
@@ -14,5 +14,5 @@
 |------|------|----------|
 | `MEMORY.md` | 关键约定（本文件） | ✓ |
 | `~/.claude/projects/.../memory/` | 用户级自动记忆 | 独立 |
-| `.claude/learnings/` | 学习日志 | ✓ |
+| `learnings/` | 学习日志 | ✓ |
 | `CLAUDE.md` | 项目规范 | ✓ |

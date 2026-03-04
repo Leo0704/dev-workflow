@@ -1,6 +1,6 @@
-# Auto-Agent
+# Dev-Workflow
 
-基于 Claude Code 的开发工作流增强系统，提供结构化的开发流程和自我改进能力。
+Claude Code 开发工作流增强插件，提供结构化的9步开发流程。
 
 ## 快速开始
 
@@ -34,7 +34,7 @@ echo "$(date +%Y-%m-%d)-功能名称" > task/.current-task
 ## 目录结构
 
 ```
-auto-agent/
+dev-workflow/
 ├── requirements/           # 需求文档目录
 │   ├── YYYY-MM-DD-功能名/  # 按日期+功能命名
 │   │   ├── prd.pdf        # 需求文档
@@ -68,7 +68,7 @@ auto-agent/
 │   ├── code-review/
 │   ├── testing/
 │   └── learning-record/
-├── .claude/learnings/             # 学习日志
+├── learnings/              # 学习日志
 │   ├── LEARNINGS.md        # 学习记录
 │   ├── ERRORS.md           # 错误记录
 │   └── FEATURE_REQUESTS.md # 功能请求
@@ -119,7 +119,7 @@ bash hooks/checkpoint.sh list
 bash hooks/checkpoint.sh restore CP-xxx
 
 # 记录学习
-echo "## [LRN-$(date +%Y%m%d)-001] category" >> .claude/learnings/LEARNINGS.md
+echo "## [LRN-$(date +%Y%m%d)-001] category" >> learnings/LEARNINGS.md
 ```
 
 ## 钩子系统
@@ -135,23 +135,35 @@ echo "## [LRN-$(date +%Y%m%d)-001] category" >> .claude/learnings/LEARNINGS.md
 ## 学习系统
 
 - `MEMORY.md` - 跨会话持久化记忆
-- `.claude/learnings/LEARNINGS.md` - 学习和最佳实践
-- `.claude/learnings/ERRORS.md` - 错误和解决方案
+- `learnings/LEARNINGS.md` - 学习和最佳实践
+- `learnings/ERRORS.md` - 错误和解决方案
 
-## 配置
+## 安装
 
-复制到新项目：
+### 方式一：一键安装（推荐）
 
 ```bash
-# 复制核心文件
-cp -r hooks/ /path/to/new-project/
-cp -r skills/ /path/to/new-project/
-cp settings.json /path/to/new-project/
-cp CLAUDE.md /path/to/new-project/
+curl -fsSL https://raw.githubusercontent.com/Leo0704/dev-workflow/main/install.sh | bash
+```
 
-# 创建目录
-mkdir -p /path/to/new-project/{requirements,task,.claude/learnings,.claude}
-ln -s ../hooks /path/to/new-project/.claude/hooks
+### 方式二：手动安装
+
+```bash
+# 克隆仓库
+git clone https://github.com/Leo0704/dev-workflow.git /tmp/dev-workflow
+
+# 安装插件
+cp -r /tmp/dev-workflow/.claude-plugin ~/.claude/plugins/dev-workflow
+
+# 清理
+rm -rf /tmp/dev-workflow
+```
+
+### 验证安装
+
+```bash
+# 在 Claude Code 中执行
+/dev-workflow
 ```
 
 ## 依赖
