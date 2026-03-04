@@ -16,9 +16,19 @@ log_warn() { echo -e "${YELLOW}[WARN]${NC} $1" >&2; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1" >&2; }
 
 # === 项目路径 ===
-# 获取项目根目录（从 lib 目录向上两级）
+# 获取插件根目录（优先使用环境变量）
+get_plugin_root() {
+    if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
+        echo "$CLAUDE_PLUGIN_ROOT"
+    else
+        # 从 lib 目录向上两级
+        echo "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+    fi
+}
+
+# 获取项目根目录（工作目录）
 get_project_root() {
-    echo "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+    echo "${PWD}"
 }
 
 # === 工具检查 ===

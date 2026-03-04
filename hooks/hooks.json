@@ -1,13 +1,11 @@
 {
-  "// 说明": "Claude Code 工作流配置 - 使用相对路径，可复制到任意项目",
-
   "hooks": {
     "SessionStart": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash hooks/session-start.sh"
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"
           }
         ]
       }
@@ -17,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash hooks/check-requirements.sh"
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/check-requirements.sh"
           }
         ]
       }
@@ -28,11 +26,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash hooks/check-file-boundary.sh"
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/check-file-boundary.sh"
           },
           {
             "type": "command",
-            "command": "bash hooks/check-workflow-step.sh"
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/check-workflow-step.sh"
           }
         ]
       },
@@ -41,11 +39,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash hooks/check-bash-boundary.sh"
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/check-bash-boundary.sh"
           },
           {
             "type": "command",
-            "command": "bash hooks/error-detector.sh"
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/error-detector.sh"
           }
         ]
       }
@@ -55,7 +53,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash hooks/code-review.sh"
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/code-review.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/learning-activator.sh"
           }
         ]
       }

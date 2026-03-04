@@ -29,7 +29,7 @@ if [ "$contains_error" = true ]; then
 ---
 **错误检测**
 
-检测到命令错误。如符合以下条件，建议记录到 .claude/learnings/ERRORS.md：
+检测到命令错误。如符合以下条件，建议记录到 learnings/ERRORS.md：
 - 错误非预期或不明显
 - 需要调查才能解决
 - 可能在类似场景中再次发生
