@@ -3,70 +3,56 @@
 # 在代码修改后触发审核提醒，自动检测项目类型并执行对应的检查
 # 同时检查是否有未完成的任务，提示继续工作流
 
-if ! command -v jq &> /dev/null; then
-    exit 0
-fi
+source "$(dirname "$0")/lib/common.sh"
+
+has_jq || exit 0
 
 INPUT=$(cat)
 
 STOP_HOOK_ACTIVE=$(echo "$INPUT" | jq -r '.stop_hook_active // false' 2>/dev/null)
-if [ "$STOP_HOOK_ACTIVE" = "true" ]; then
-    exit 0
-fi
+[ "$STOP_HOOK_ACTIVE" = "true" ] && exit 0
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+init_task_context
 cd "$PROJECT_ROOT" 2>/dev/null || exit 0
 
 # === 任务续接检查 ===
-TASK_DIR="$PROJECT_ROOT/task"
-CURRENT_TASK_FILE="$TASK_DIR/.current-task"
-
 check_pending_tasks() {
     # 检查是否有当前任务
-    if [ -f "$CURRENT_TASK_FILE" ]; then
-        local task_name=$(cat "$CURRENT_TASK_FILE" 2>/dev/null | tr -d ' \n')
-        if [ -n "$task_name" ] && [ -d "$TASK_DIR/$task_name" ]; then
-            local step_file="$TASK_DIR/$task_name/.workflow-step"
-            if [ -f "$step_file" ]; then
-                local current_step=$(cat "$step_file" 2>/dev/null | tr -d ' \n')
-                if [ -n "$current_step" ] && [[ "$current_step" =~ ^[0-9]+$ ]]; then
-                    if [ "$current_step" -lt 7 ]; then
-                        echo ""
-                        echo "---"
-                        echo ""
-                        echo "## 📋 任务续接提醒"
-                        echo ""
-                        echo "**当前任务:** $task_name"
-                        echo "**当前步骤:** $current_step / 7"
-                        echo ""
-                        echo "工作流尚未完成，请使用 \`/dev-workflow\` 继续。"
-                        echo ""
-                        return 0
-                    else
-                        # 步骤7已完成，提示清理
-                        echo ""
-                        echo "---"
-                        echo ""
-                        echo "## ✅ 任务完成"
-                        echo ""
-                        echo "**当前任务:** $task_name"
-                        echo "**状态:** 工作流已完成（步骤 7/7）"
-                        echo ""
-                        echo "建议清理："
-                        echo '```bash'
-                        echo "rm task/$task_name/.workflow-step"
-                        echo '```'
-                        echo ""
-                        echo "如需开始新任务，请创建新的任务目录。"
-                        echo ""
-                        return 0
-                    fi
-                fi
+    if [ -n "$CURRENT_TASK_NAME" ] && [ -d "$CURRENT_TASK_DIR" ]; then
+        local current_step=$(get_workflow_step "$CURRENT_TASK_DIR")
+        if [ "$current_step" -gt 0 ]; then
+            if [ "$current_step" -lt 7 ]; then
+                echo ""
+                echo "---"
+                echo ""
+                echo "## 📋 任务续接提醒"
+                echo ""
+                echo "**当前任务:** $CURRENT_TASK_NAME"
+                echo "**当前步骤:** $current_step / 7"
+                echo ""
+                echo "工作流尚未完成，请使用 \`/dev-workflow\` 继续。"
+                echo ""
+                return 0
+            else
+                echo ""
+                echo "---"
+                echo ""
+                echo "## ✅ 任务完成"
+                echo ""
+                echo "**当前任务:** $CURRENT_TASK_NAME"
+                echo "**状态:** 工作流已完成（步骤 7/7）"
+                echo ""
+                echo "建议清理："
+                echo '```bash'
+                echo "rm task/$CURRENT_TASK_NAME/.workflow-step"
+                echo '```'
+                echo ""
+                return 0
             fi
         fi
     fi
 
-    # 检查是否有其他待处理任务（没有.current-task但有任务目录）
+    # 检查是否有其他待处理任务
     if [ -d "$TASK_DIR" ]; then
         local pending_tasks=$(find "$TASK_DIR" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -5)
         if [ -n "$pending_tasks" ]; then
@@ -76,8 +62,7 @@ check_pending_tasks() {
             echo "## 📋 可用任务"
             echo ""
             echo "$pending_tasks" | while read -r task_dir; do
-                local task_name=$(basename "$task_dir")
-                echo "  - $task_name"
+                [ -n "$task_dir" ] && echo "  - $(basename "$task_dir")"
             done
             echo ""
             echo "使用以下命令切换任务："
@@ -85,17 +70,13 @@ check_pending_tasks() {
             echo "echo \"任务名\" > task/.current-task"
             echo '```'
             echo ""
-            echo "然后使用 \`/dev-workflow\` 开始工作流。"
-            echo ""
         fi
     fi
 }
 
 # 检查是否有未提交的修改
 CHANGES=$(git status --porcelain 2>/dev/null)
-if [ -z "$CHANGES" ]; then
-    exit 0
-fi
+[ -z "$CHANGES" ] && exit 0
 
 CHANGE_COUNT=$(echo "$CHANGES" | wc -l | tr -d ' ')
 
@@ -126,87 +107,48 @@ LINT_ERROR=""
 
 case "$PROJECT_TYPE" in
     go)
-        # Go 项目检查
         HAS_GO_CHANGES=$(echo "$CHANGES" | grep '\.go$' | head -1)
         if [ -n "$HAS_GO_CHANGES" ]; then
             BUILD_OUTPUT=$(go build ./... 2>&1)
-            if [ $? -eq 0 ]; then
-                BUILD_STATUS="通过"
-            else
-                BUILD_STATUS="失败"
-                BUILD_ERROR=$(echo "$BUILD_OUTPUT" | head -5)
-            fi
+            [ $? -eq 0 ] && BUILD_STATUS="通过" || { BUILD_STATUS="失败"; BUILD_ERROR=$(echo "$BUILD_OUTPUT" | head -5); }
 
             VET_OUTPUT=$(go vet ./... 2>&1)
-            if [ $? -eq 0 ]; then
-                LINT_STATUS="通过"
-            else
-                LINT_STATUS="失败"
-                LINT_ERROR=$(echo "$VET_OUTPUT" | head -5)
-            fi
+            [ $? -eq 0 ] && LINT_STATUS="通过" || { LINT_STATUS="失败"; LINT_ERROR=$(echo "$VET_OUTPUT" | head -5); }
 
             FMT_OUTPUT=$(gofmt -l . 2>&1)
-            if [ -z "$FMT_OUTPUT" ]; then
-                FMT_STATUS="通过"
-            else
-                gofmt -w . 2>/dev/null
-                FMT_STATUS="已自动格式化"
-            fi
+            [ -z "$FMT_OUTPUT" ] && FMT_STATUS="通过" || { gofmt -w . 2>/dev/null; FMT_STATUS="已自动格式化"; }
         fi
         ;;
     node)
-        # Node.js 项目检查
         HAS_JS_CHANGES=$(echo "$CHANGES" | grep -E '\.(js|ts|jsx|tsx|vue)$' | head -1)
         if [ -n "$HAS_JS_CHANGES" ]; then
-            # 检测包管理器
-            if [ -f "pnpm-lock.yaml" ]; then
-                PKG_MANAGER="pnpm"
-            elif [ -f "yarn.lock" ]; then
-                PKG_MANAGER="yarn"
-            else
-                PKG_MANAGER="npm"
-            fi
+            [ -f "pnpm-lock.yaml" ] && PKG_MANAGER="pnpm" || { [ -f "yarn.lock" ] && PKG_MANAGER="yarn" || PKG_MANAGER="npm"; }
 
             if [ -f "package.json" ] && grep -q '"build"' package.json; then
                 BUILD_OUTPUT=$($PKG_MANAGER run build 2>&1)
-                if [ $? -eq 0 ]; then
-                    BUILD_STATUS="通过"
-                else
-                    BUILD_STATUS="失败"
-                    BUILD_ERROR=$(echo "$BUILD_OUTPUT" | head -5)
-                fi
+                [ $? -eq 0 ] && BUILD_STATUS="通过" || { BUILD_STATUS="失败"; BUILD_ERROR=$(echo "$BUILD_OUTPUT" | head -5); }
             fi
 
             if [ -f "package.json" ] && grep -q '"lint"' package.json; then
                 LINT_OUTPUT=$($PKG_MANAGER run lint 2>&1)
-                if [ $? -eq 0 ]; then
-                    LINT_STATUS="通过"
-                else
-                    LINT_STATUS="失败"
-                    LINT_ERROR=$(echo "$LINT_OUTPUT" | head -5)
-                fi
+                [ $? -eq 0 ] && LINT_STATUS="通过" || { LINT_STATUS="失败"; LINT_ERROR=$(echo "$LINT_OUTPUT" | head -5); }
             fi
         fi
         ;;
     python)
-        # Python 项目检查
         HAS_PY_CHANGES=$(echo "$CHANGES" | grep '\.py$' | head -1)
         if [ -n "$HAS_PY_CHANGES" ]; then
             if command -v python &> /dev/null; then
                 BUILD_OUTPUT=$(python -m py_compile . 2>&1)
-                if [ $? -eq 0 ]; then
-                    BUILD_STATUS="通过"
-                else
-                    BUILD_STATUS="失败"
-                    BUILD_ERROR=$(echo "$BUILD_OUTPUT" | head -5)
-                fi
+                [ $? -eq 0 ] && BUILD_STATUS="通过" || { BUILD_STATUS="失败"; BUILD_ERROR=$(echo "$BUILD_OUTPUT" | head -5); }
             fi
         fi
         ;;
 esac
 
 # 构建输出
-OUTPUT="---
+cat << EOF
+---
 
 **老板，检测到 ${CHANGE_COUNT} 个文件被修改，请确认：**
 
@@ -215,47 +157,34 @@ OUTPUT="---
 - [ ] 安全性: 无注入等风险
 - [ ] 错误处理: 完善
 
-**项目类型:** ${PROJECT_TYPE}"
+**项目类型:** ${PROJECT_TYPE}
+EOF
 
-if [ "$BUILD_STATUS" != "未检查" ] || [ "$LINT_STATUS" != "未检查" ]; then
-    OUTPUT="${OUTPUT}
+[ "$BUILD_STATUS" != "未检查" ] || [ "$LINT_STATUS" != "未检查" ] && {
+    echo ""
+    echo "**编译/检查结果:**"
+    [ "$BUILD_STATUS" != "未检查" ] && echo "- build: $BUILD_STATUS"
+    [ "$LINT_STATUS" != "未检查" ] && echo "- lint: $LINT_STATUS"
+}
 
-**编译/检查结果:**"
+[ -n "$BUILD_ERROR" ] && {
+    echo ""
+    echo "**编译错误详情:**"
+    echo '```'
+    echo "$BUILD_ERROR"
+    echo '```'
+}
 
-    if [ "$BUILD_STATUS" != "未检查" ]; then
-        OUTPUT="${OUTPUT}
-- build: ${BUILD_STATUS}"
-    fi
+[ -n "$LINT_ERROR" ] && {
+    echo ""
+    echo "**检查错误详情:**"
+    echo '```'
+    echo "$LINT_ERROR"
+    echo '```'
+}
 
-    if [ "$LINT_STATUS" != "未检查" ]; then
-        OUTPUT="${OUTPUT}
-- lint: ${LINT_STATUS}"
-    fi
-fi
-
-if [ -n "$BUILD_ERROR" ]; then
-    OUTPUT="${OUTPUT}
-
-**编译错误详情:**
-\`\`\`
-${BUILD_ERROR}
-\`\`\`"
-fi
-
-if [ -n "$LINT_ERROR" ]; then
-    OUTPUT="${OUTPUT}
-
-**检查错误详情:**
-\`\`\`
-${LINT_ERROR}
-\`\`\`"
-fi
-
-OUTPUT="${OUTPUT}
-
-**需要详细审核请使用 /code-review 技能**"
-
-echo "$OUTPUT"
+echo ""
+echo "**需要详细审核请使用 /code-review 技能**"
 
 # 检查待续接的任务
 check_pending_tasks

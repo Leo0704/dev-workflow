@@ -2,13 +2,14 @@
 # 学习提醒钩子
 # 在任务完成后提醒记录学习
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-LEARNINGS_DIR="$PROJECT_ROOT/.learnings"
+source "$(dirname "$0")/lib/common.sh"
+
+init_task_context
+
+LEARNINGS_DIR="$PROJECT_ROOT/.claude/learnings"
 
 # 检查学习日志目录是否存在
-if [ ! -d "$LEARNINGS_DIR" ]; then
-    exit 0
-fi
+[ ! -d "$LEARNINGS_DIR" ] && exit 0
 
 # 统计待处理的学习条目
 PENDING_COUNT=$(grep -h "Status\*\*: pending" "$LEARNINGS_DIR"/*.md 2>/dev/null | wc -l | tr -d ' ')
@@ -27,6 +28,6 @@ if [ "$PENDING_COUNT" -gt 0 ] 2>/dev/null; then
 - 学到项目特定模式？
 - 错误需要调试才能解决？
 
-如需记录，请编辑 .learnings/ 下的对应文件。
+如需记录，请编辑 .claude/learnings/ 下的对应文件。
 EOF
 fi

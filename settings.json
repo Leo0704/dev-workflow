@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/session-start.sh"
+            "command": "bash hooks/session-start.sh"
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/check-requirements.sh"
+            "command": "bash hooks/check-requirements.sh"
           }
         ]
       }
@@ -28,11 +28,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/check-file-boundary.sh"
+            "command": "bash hooks/check-file-boundary.sh"
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/check-workflow-step.sh"
+            "command": "bash hooks/check-workflow-step.sh"
           }
         ]
       },
@@ -41,11 +41,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/check-bash-boundary.sh"
+            "command": "bash hooks/check-bash-boundary.sh"
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/error-detector.sh"
+            "command": "bash hooks/error-detector.sh"
           }
         ]
       }
@@ -55,7 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/code-review.sh"
+            "command": "bash hooks/code-review.sh"
           }
         ]
       }

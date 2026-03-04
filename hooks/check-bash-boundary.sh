@@ -2,44 +2,25 @@
 # Best-effort: 检查 Bash 命令中的写操作是否超出项目边界
 # 读取项目配置，只允许在配置中指定的目录执行写操作
 
-if ! command -v jq &> /dev/null; then
-    exit 0
-fi
+source "$(dirname "$0")/lib/common.sh"
+
+has_jq || exit 0
 
 INPUT=$(cat)
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 
-if [ -z "$COMMAND" ]; then
-    exit 0
-fi
+[ -z "$COMMAND" ] && exit 0
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-CONFIG_FILE="$PROJECT_ROOT/.claude/config.json"
+init_task_context
 
-# 读取允许的路径
-ALLOWED_PREFIXES=()
-ALLOWED_PREFIXES+=("$PROJECT_ROOT")
-ALLOWED_PREFIXES+=("$HOME/.claude")
-
-# 从配置文件读取额外的允许路径
-if [ -f "$CONFIG_FILE" ]; then
-    while IFS= read -r path; do
-        if [ -n "$path" ]; then
-            if [[ "$path" != /* ]]; then
-                path="$PROJECT_ROOT/$path"
-            fi
-            ALLOWED_PREFIXES+=("$path")
-        fi
-    done < <(jq -r '.allowedPaths[]? // empty' "$CONFIG_FILE" 2>/dev/null)
-fi
-
+# 检查路径是否允许
 check_path() {
     local path="$1"
     [[ "$path" != /* ]] && return 0
 
-    for allowed in "${ALLOWED_PREFIXES[@]}"; do
-        [[ "$path" == "$allowed"* ]] && return 0
-    done
+    if is_path_allowed "$path" "$PROJECT_ROOT"; then
+        return 0
+    fi
 
     echo "禁止: Bash 命令写入项目外路径: $path" >&2
     echo "如需修改此路径，请在 .claude/config.json 中配置 allowedPaths。" >&2

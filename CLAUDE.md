@@ -9,15 +9,14 @@
 ## 核心功能
 
 ### 1. 开发工作流 (dev-workflow)
-- 8步开发流程：历史学习检查 → 需求理解 → 上下文调研 → 影响分析 → 实施计划 → 代码开发 → 代码审核 → 测试验证 → 学习记录
+- 9步开发流程：历史学习检查 → 需求理解 → 上下文调研 → 影响分析 → 实施计划 → 代码开发 → 代码审核 → 测试验证 → 学习记录
 - 强制需求确认机制：需求不清晰不写代码
-- 团队模式：复杂任务自动启用多 agent 协作
 
 ### 2. 学习日志系统
 - `MEMORY.md` - 项目级跨会话记忆，存储重要约定和规范
-- `.learnings/LEARNINGS.md` - 记录学习、纠正、最佳实践
-- `.learnings/ERRORS.md` - 记录错误和解决方案
-- `.learnings/FEATURE_REQUESTS.md` - 记录功能请求
+- `.claude/learnings/LEARNINGS.md` - 记录学习、纠正、最佳实践
+- `.claude/learnings/ERRORS.md` - 记录错误和解决方案
+- `.claude/learnings/FEATURE_REQUESTS.md` - 记录功能请求
 
 ## 目录结构
 
@@ -31,12 +30,21 @@ auto-agent/
 │   │   ├── prd.pdf         # 需求文档
 │   │   └── .workflow-step  # 工作流状态
 │   └── .current-task       # 当前任务标识
-├── .learnings/             # 学习日志
+├── .claude/learnings/             # 学习日志
 │   ├── LEARNINGS.md
 │   ├── ERRORS.md
 │   └── FEATURE_REQUESTS.md
 ├── hooks/                  # 项目级钩子
 ├── skills/                 # 项目级技能
+│   ├── dev-workflow/       # 主编排技能
+│   ├── requirement-analysis/
+│   ├── context-research/
+│   ├── impact-analysis/
+│   ├── implementation-plan/
+│   ├── code-development/
+│   ├── code-review/
+│   ├── testing/
+│   └── learning-record/
 ├── settings.json           # Claude Code 配置
 ├── CLAUDE.md              # 本文件（项目规范）
 └── MEMORY.md              # 跨会话记忆
@@ -50,7 +58,7 @@ auto-agent/
 | UserPromptSubmit | 用户提交提示 | 检查需求 |
 | PreToolUse | 工具使用前 | 检查文件边界和工作流步骤 |
 | Stop | 会话结束 | 代码审核 + 任务续接提醒 |
-| PostToolUse(Bash) | Bash命令后 | 错误检测，提醒记录到 .learnings/ |
+| PostToolUse(Bash) | Bash命令后 | 错误检测，提醒记录到 .claude/learnings/ |
 
 ## 开发规范
 
@@ -78,9 +86,9 @@ cat task/$(cat task/.current-task)/.workflow-step
 # 记录学习到 MEMORY.md（重要约定）
 echo "- 新约定内容" >> MEMORY.md
 
-# 记录学习到 .learnings/
-echo "## [LRN-$(date +%Y%m%d)-001] category" >> .learnings/LEARNINGS.md
+# 记录学习到 .claude/learnings/
+echo "## [LRN-$(date +%Y%m%d)-001] category" >> .claude/learnings/LEARNINGS.md
 
 # 记录错误
-echo "## [ERR-$(date +%Y%m%d)-001] command" >> .learnings/ERRORS.md
+echo "## [ERR-$(date +%Y%m%d)-001] command" >> .claude/learnings/ERRORS.md
 ```

@@ -2,16 +2,14 @@
 # 错误检测钩子
 # 检测命令执行失败并提醒记录
 
-if ! command -v jq &> /dev/null; then
-    exit 0
-fi
+source "$(dirname "$0")/lib/common.sh"
+
+has_jq || exit 0
 
 INPUT=$(cat)
 OUTPUT=$(echo "$INPUT" | jq -r '.tool_output // ""' 2>/dev/null)
 
-if [ -z "$OUTPUT" ]; then
-    exit 0
-fi
+[ -z "$OUTPUT" ] && exit 0
 
 # 错误模式
 ERROR_PATTERNS="error:|Error:|ERROR:|failed|FAILED|command not found|No such file|Permission denied|fatal:|Exception|Traceback|npm ERR!|ModuleNotFoundError|SyntaxError|TypeError|exit code|non-zero"
@@ -31,7 +29,7 @@ if [ "$contains_error" = true ]; then
 ---
 **错误检测**
 
-检测到命令错误。如符合以下条件，建议记录到 .learnings/ERRORS.md：
+检测到命令错误。如符合以下条件，建议记录到 .claude/learnings/ERRORS.md：
 - 错误非预期或不明显
 - 需要调查才能解决
 - 可能在类似场景中再次发生

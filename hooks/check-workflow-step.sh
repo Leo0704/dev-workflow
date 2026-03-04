@@ -2,71 +2,32 @@
 # 工作流步骤检查
 # 有需求文档时，必须走完前4步才能写代码
 
-if ! command -v jq &> /dev/null; then
-    exit 0
-fi
+source "$(dirname "$0")/lib/common.sh"
+
+has_jq || exit 0
 
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 
-if [ -z "$FILE_PATH" ]; then
-    exit 0
-fi
+[ -z "$FILE_PATH" ] && exit 0
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-CONFIG_FILE="$PROJECT_ROOT/.claude/config.json"
-TASK_DIR="$PROJECT_ROOT/task"
-CURRENT_TASK_FILE="$TASK_DIR/.current-task"
-
-# 获取当前任务目录
-get_current_task() {
-    if [ -f "$CURRENT_TASK_FILE" ]; then
-        local task_name=$(cat "$CURRENT_TASK_FILE" 2>/dev/null | tr -d ' \n')
-        if [ -n "$task_name" ] && [ -d "$TASK_DIR/$task_name" ]; then
-            echo "$TASK_DIR/$task_name"
-            return
-        fi
-    fi
-    echo ""
-}
-
-CURRENT_TASK_DIR=$(get_current_task)
-STEP_FILE="$CURRENT_TASK_DIR/.workflow-step"
+init_task_context
 
 # 没有当前任务 → 不强制
-if [ -z "$CURRENT_TASK_DIR" ]; then
-    exit 0
-fi
+[ -z "$CURRENT_TASK_DIR" ] && exit 0
 
 # 检查任务目录是否有需求文档
-FILE_COUNT=$(find "$CURRENT_TASK_DIR" -type f ! -name ".workflow-step" ! -name ".gitkeep" 2>/dev/null | wc -l | tr -d ' ')
-if [ "$FILE_COUNT" -eq 0 ]; then
-    exit 0
-fi
+FILE_COUNT=$(count_files "$CURRENT_TASK_DIR" "-name .workflow-step -o -name .gitkeep")
+[ "$FILE_COUNT" -eq 0 ] && exit 0
 
 # 检查是否是代码文件
-BASENAME=$(basename "$FILE_PATH")
-case "$BASENAME" in
-    *.go|*.vue|*.ts|*.js|*.jsx|*.tsx|*.py|*.java|*.rs|*.c|*.cpp|*.h|*.php|*.rb|*.swift|*.kt)
-        ;;
-    *)
-        exit 0
-        ;;
-esac
+is_code_file "$FILE_PATH" || exit 0
 
 # 排除：允许写入工作流状态文件本身
-if [[ "$FILE_PATH" == *".workflow-step"* ]]; then
-    exit 0
-fi
+[[ "$FILE_PATH" == *".workflow-step"* ]] && exit 0
 
 # 读取当前步骤
-CURRENT_STEP=0
-if [ -f "$STEP_FILE" ]; then
-    CURRENT_STEP=$(cat "$STEP_FILE" 2>/dev/null | tr -d ' \n')
-    if ! [[ "$CURRENT_STEP" =~ ^[0-9]+$ ]]; then
-        CURRENT_STEP=0
-    fi
-fi
+CURRENT_STEP=$(get_workflow_step "$CURRENT_TASK_DIR")
 
 # 步骤 >= 5 才能写代码
 if [ "$CURRENT_STEP" -lt 5 ]; then
