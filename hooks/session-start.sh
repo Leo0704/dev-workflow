@@ -6,6 +6,9 @@ source "$(dirname "$0")/lib/common.sh"
 
 init_task_context
 
+# 自动创建项目目录结构
+ensure_project_structure
+
 # 显示当前任务信息
 show_current_task() {
     if [ -z "$CURRENT_TASK_DIR" ] || [ -z "$CURRENT_TASK_NAME" ]; then

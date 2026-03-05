@@ -12,31 +12,36 @@
 - 9步开发流程：历史学习检查 → 需求理解 → 上下文调研 → 影响分析 → 实施计划 → 代码开发 → 代码审核 → 测试验证 → 学习记录
 - 强制需求确认机制：需求不清晰不写代码
 
-### 2. 学习日志系统
-- `MEMORY.md` - 项目级跨会话记忆，存储重要约定和规范
-- `learnings/LEARNINGS.md` - 记录学习、纠正、最佳实践
-- `learnings/ERRORS.md` - 记录错误和解决方案
-- `learnings/FEATURE_REQUESTS.md` - 记录功能请求
+### 2. 任务分级 (v2.1 新增)
+- **Quick** 🚀：typo、注释、小修改 → 直接写代码
+- **Standard** ⚡：bug修复、单文件改动 → 需求分析+计划+开发
+- **Full** 📋：新功能、模块开发 → 完整9步流程
+- 自动检测任务复杂度并适配流程
+
+### 3. 自我学习系统
+- 学习数据存储在插件目录 `~/.claude/plugins/dev-workflow/data/`
+- `data/learnings.md` - 最佳实践和经验（自动生成草稿）
+- `data/errors.md` - 错误和解决方案（钩子自动记录）
+
+### 4. Git 集成 (v2.1 新增)
+- 步骤4确认后：建议创建 feature 分支
+- 步骤8完成后：提示 `/commit` 或 `/commit-push-pr`
+
+## 文件分布
+
+| 位置 | 内容 | 说明 |
+|------|------|------|
+| 用户项目 `task/` | 需求文档、分析报告、工作流状态 | 跟随项目，可版本控制 |
+| 插件目录 `data/` | 学习数据 | 跨项目复用 |
 
 ## 目录结构
 
 ```
-auto-agent/
-├── .claude/
-│   ├── hooks/              # 钩子脚本
-│   └── skills/             # 技能文件
-├── task/                   # 任务目录
-│   ├── 2026-03-03-功能名/  # 任务子目录
-│   │   ├── prd.pdf         # 需求文档
-│   │   └── .workflow-step  # 工作流状态
-│   └── .current-task       # 当前任务标识
-├── learnings/             # 学习日志
-│   ├── LEARNINGS.md
-│   ├── ERRORS.md
-│   └── FEATURE_REQUESTS.md
-├── hooks/                  # 项目级钩子
-├── skills/                 # 项目级技能
-│   ├── dev-workflow/       # 主编排技能
+~/.claude/plugins/dev-workflow/
+├── .claude-plugin/
+│   └── plugin.json          # 插件清单
+├── skills/                   # 技能目录
+│   ├── dev-workflow/         # 主工作流
 │   ├── requirement-analysis/
 │   ├── context-research/
 │   ├── impact-analysis/
@@ -45,9 +50,17 @@ auto-agent/
 │   ├── code-review/
 │   ├── testing/
 │   └── learning-record/
-├── settings.json           # Claude Code 配置
-├── CLAUDE.md              # 本文件（项目规范）
-└── MEMORY.md              # 跨会话记忆
+├── hooks/                    # 钩子
+│   ├── hooks.json
+│   ├── task-classifier.sh    # 任务分级（新增）
+│   ├── git-integration.sh    # Git 集成（新增）
+│   └── *.sh
+├── agents/                   # 子代理
+├── data/                     # 学习数据（安装时创建）
+│   ├── learnings.md
+│   └── errors.md
+├── CLAUDE.md                 # 本文件（项目规范）
+└── README.md
 ```
 
 ## 钩子系统
@@ -55,10 +68,10 @@ auto-agent/
 | 钩子 | 触发时机 | 作用 |
 |------|----------|------|
 | SessionStart | 会话开始 | 显示当前任务 |
-| UserPromptSubmit | 用户提交提示 | 检查需求 |
+| UserPromptSubmit | 用户提交提示 | **任务分级** + 需求检查 |
 | PreToolUse | 工具使用前 | 检查文件边界和工作流步骤 |
-| Stop | 会话结束 | 代码审核 + 任务续接提醒 |
-| PostToolUse(Bash) | Bash命令后 | 错误检测，提醒记录到 learnings/ |
+| Stop | 会话结束 | **Git 建议** + **智能学习提取** |
+| PostToolUse(Bash) | Bash命令后 | 错误检测，自动记录到插件数据 |
 
 ## 开发规范
 
@@ -76,19 +89,23 @@ auto-agent/
 ## 常用命令
 
 ```bash
-# 创建新任务
-mkdir -p task/$(date +%Y-%m-%d)-功能名称
-echo "$(date +%Y-%m-%d)-功能名称" > task/.current-task
+# 查看插件学习数据
+cat ~/.claude/plugins/dev-workflow/data/learnings.md
+cat ~/.claude/plugins/dev-workflow/data/errors.md
 
-# 查看当前工作流步骤
-cat task/$(cat task/.current-task)/.workflow-step
+# 手动记录学习
+/dev-workflow:learning-record
 
-# 记录学习到 MEMORY.md（重要约定）
-echo "- 新约定内容" >> MEMORY.md
-
-# 记录学习到 learnings/
-echo "## [LRN-$(date +%Y%m%d)-001] category" >> learnings/LEARNINGS.md
-
-# 记录错误
-echo "## [ERR-$(date +%Y%m%d)-001] command" >> learnings/ERRORS.md
+# 切换任务级别
+echo "quick" > task/$(cat task/.current-task)/.task-level
+echo "standard" > task/$(cat task/.current-task)/.task-level
+echo "full" > task/$(cat task/.current-task)/.task-level
 ```
+
+## 版本历史
+
+| 版本 | 日期 | 变更 |
+|------|------|------|
+| 2.1.0 | 2026-03-05 | 任务分级、自动步骤流转、智能学习提取、Git 集成 |
+| 2.0.0 | - | 重构为插件结构 |
+| 1.0.0 | - | 初始版本 |

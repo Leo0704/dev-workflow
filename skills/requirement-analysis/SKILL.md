@@ -53,7 +53,15 @@ cat skills/requirement-analysis/templates/requirement-report.md
 task/{当前任务}/requirement-report.md
 ```
 
-### 步骤 5: 确认模糊点
+### 步骤 5: 更新工作流状态
+
+**完成需求分析后，自动更新工作流步骤**：
+
+```bash
+echo "1" > task/$(cat task/.current-task)/.workflow-step
+```
+
+### 步骤 6: 确认模糊点
 
 **重要**: 如果有模糊点，使用 AskUserQuestion 工具向用户确认后再继续。
 

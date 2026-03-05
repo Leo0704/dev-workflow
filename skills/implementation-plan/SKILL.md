@@ -53,9 +53,29 @@ cat skills/implementation-plan/templates/plan-report.md
 task/{当前任务}/plan-report.md
 ```
 
-### 步骤 5: 等待用户确认
+### 步骤 5: 更新工作流状态
+
+**完成实施计划后，自动更新工作流步骤**：
+
+```bash
+echo "4" > task/$(cat task/.current-task)/.workflow-step
+```
+
+### 步骤 6: 等待用户确认
 
 **重要**: 实施计划必须经用户确认后才能进入代码开发阶段。
+
+### 步骤 7: Git 分支创建（可选）
+
+用户确认后，建议创建功能分支：
+
+```bash
+# 检查当前分支
+git branch --show-current
+
+# 如果在 main/master，创建 feature 分支
+git checkout -b feature/{任务名}
+```
 
 ---
 

@@ -1,7 +1,7 @@
 {
   "name": "dev-workflow",
-  "version": "2.0.0",
-  "description": "Claude Code 开发工作流增强插件 - 结构化的9步开发流程",
+  "version": "2.1.0",
+  "description": "Claude Code 开发工作流增强插件 - 结构化的9步开发流程，支持任务分级、自动步骤流转、智能学习提取和 Git 集成",
   "author": {
     "name": "longyi"
   },
@@ -14,18 +14,9 @@
     "development",
     "multi-agent",
     "code-review",
-    "testing"
+    "testing",
+    "task-classification",
+    "auto-learning"
   ],
-  "license": "MIT",
-  "skills": [
-    "skills/dev-workflow",
-    "skills/requirement-analysis",
-    "skills/context-research",
-    "skills/impact-analysis",
-    "skills/implementation-plan",
-    "skills/code-development",
-    "skills/code-review",
-    "skills/testing",
-    "skills/learning-record"
-  ]
+  "license": "MIT"
 }

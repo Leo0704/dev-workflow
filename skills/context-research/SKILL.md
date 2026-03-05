@@ -53,6 +53,14 @@ cat skills/context-research/templates/context-report.md
 task/{当前任务}/context-report.md
 ```
 
+### 步骤 5: 更新工作流状态
+
+**完成上下文调研后，自动更新工作流步骤**：
+
+```bash
+echo "2" > task/$(cat task/.current-task)/.workflow-step
+```
+
 ---
 
 ## 调研内容清单

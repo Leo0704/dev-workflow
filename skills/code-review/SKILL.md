@@ -25,7 +25,15 @@ git status
 git diff --name-only
 ```
 
-### 步骤 2: 逐文件审核
+### 步骤 2: 更新工作流状态
+
+**开始代码审核时，自动更新工作流步骤**：
+
+```bash
+echo "6" > task/$(cat task/.current-task)/.workflow-step
+```
+
+### 步骤 3: 逐文件审核
 
 对每个修改的文件进行审核：
 
@@ -47,14 +55,14 @@ git diff --name-only
    - 代码风格
    - 文件结构
 
-### 步骤 3: 安全检查
+### 步骤 4: 安全检查
 
 - 输入验证
 - SQL 注入风险
 - XSS 风险
 - 敏感数据处理
 
-### 步骤 4: 生成报告
+### 步骤 5: 生成报告
 
 使用模板: `templates/review-report.md`
 

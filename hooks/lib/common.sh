@@ -165,6 +165,40 @@ get_workflow_step() {
     echo "0"
 }
 
+# 获取当前任务级别 (quick/standard/full)
+get_task_level() {
+    local task_dir="${1:-$(get_current_task_dir)}"
+    if [ -z "$task_dir" ]; then
+        echo "full"
+        return
+    fi
+
+    local level_file="$task_dir/.task-level"
+    if [ -f "$level_file" ]; then
+        local level=$(cat "$level_file" 2>/dev/null | tr -d ' \n')
+        case "$level" in
+            quick|standard|full)
+                echo "$level"
+                return
+                ;;
+        esac
+    fi
+    echo "full"
+}
+
+# 设置任务级别
+set_task_level() {
+    local task_dir="${1:-$(get_current_task_dir)}"
+    local level="$2"
+    if [ -n "$task_dir" ] && [ -n "$level" ]; then
+        case "$level" in
+            quick|standard|full)
+                echo "$level" > "$task_dir/.task-level"
+                ;;
+        esac
+    fi
+}
+
 # 设置工作流步骤
 set_workflow_step() {
     local task_dir="${1:-$(get_current_task_dir)}"
@@ -272,6 +306,38 @@ is_code_file() {
     esac
 }
 
+# === 项目结构初始化 ===
+# 确保 dev-workflow 所需的目录结构存在
+# 返回: 0 成功，1 失败
+ensure_project_structure() {
+    local root="${1:-$PROJECT_ROOT}"
+    local created=0
+
+    # 必需目录：task（用户可见）
+    if [ ! -d "$root/task" ]; then
+        mkdir -p "$root/task" 2>/dev/null && created=$((created + 1))
+    fi
+
+    # 学习记录：.claude/learnings（隐藏，不影响用户项目结构）
+    local learnings_dir="$root/.claude/learnings"
+    if [ ! -d "$learnings_dir" ]; then
+        mkdir -p "$learnings_dir" 2>/dev/null && created=$((created + 1))
+    fi
+
+    # 创建学习记录文件（如果不存在）
+    if [ ! -f "$learnings_dir/LEARNINGS.md" ]; then
+        echo "# 学习记录" > "$learnings_dir/LEARNINGS.md"
+        created=$((created + 1))
+    fi
+
+    if [ ! -f "$learnings_dir/ERRORS.md" ]; then
+        echo "# 错误记录" > "$learnings_dir/ERRORS.md"
+        created=$((created + 1))
+    fi
+
+    [ $created -gt 0 ] && return 0 || return 1
+}
+
 # === 初始化导出 ===
 # 导出所有公共函数
 export -f log_info log_success log_warn log_error
@@ -280,6 +346,8 @@ export -f get_current_task_name get_current_task_dir
 export -f json_update count_files get_timestamp
 export -f init_task_context read_tool_input
 export -f get_workflow_step set_workflow_step
+export -f get_task_level set_task_level
 export -f get_allowed_paths is_path_allowed
 export -f get_forbidden_patterns is_sensitive_file
 export -f is_code_file
+export -f ensure_project_structure

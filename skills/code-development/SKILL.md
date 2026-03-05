@@ -29,6 +29,8 @@ cat task/{当前任务}/plan-report.md
 
 ### 步骤 2: 更新工作流状态
 
+**开始代码开发时，自动更新工作流步骤**：
+
 ```bash
 echo "5" > task/$(cat task/.current-task)/.workflow-step
 ```

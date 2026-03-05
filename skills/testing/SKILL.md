@@ -27,7 +27,15 @@ cat task/{当前任务}/plan-report.md
 cat skills/testing/templates/test-plan.md
 ```
 
-### 步骤 2: 编写测试用例
+### 步骤 2: 更新工作流状态
+
+**开始测试验证时，自动更新工作流步骤**：
+
+```bash
+echo "7" > task/$(cat task/.current-task)/.workflow-step
+```
+
+### 步骤 3: 编写测试用例
 
 使用模板: `templates/test-cases.md`
 
@@ -36,7 +44,7 @@ cat skills/testing/templates/test-plan.md
 - 边界条件测试
 - 异常流程测试
 
-### 步骤 3: 执行测试
+### 步骤 4: 执行测试
 
 ```bash
 # 运行单元测试
@@ -49,7 +57,7 @@ npm run test:integration
 npm run test:e2e
 ```
 
-### 步骤 4: 生成测试报告
+### 步骤 5: 生成测试报告
 
 使用模板: `templates/test-report.md`
 
