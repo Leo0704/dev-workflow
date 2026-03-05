@@ -17,6 +17,16 @@ user-invokable: true
 
 ## 执行流程
 
+### ⚠️ 步骤 0: 立即更新工作流状态（必须）
+
+**在开始任何操作前，必须先更新工作流步骤！**
+
+```bash
+echo "2" > task/$(cat task/.current-task)/.workflow-step
+```
+
+这确保钩子知道当前正在执行步骤 2。
+
 ### 步骤 1: 搜索相似功能
 
 ```bash
@@ -51,14 +61,6 @@ cat skills/context-research/templates/context-report.md
 
 # 填充后保存到
 task/{当前任务}/context-report.md
-```
-
-### 步骤 5: 更新工作流状态
-
-**完成上下文调研后，自动更新工作流步骤**：
-
-```bash
-echo "2" > task/$(cat task/.current-task)/.workflow-step
 ```
 
 ---

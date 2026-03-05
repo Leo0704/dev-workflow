@@ -94,24 +94,24 @@ user-invokable: true
 
 ### 步骤说明
 
-| 步骤 | 名称 | Agent | 并行组 | 自动流转 | 说明 |
+| 步骤 | 名称 | Agent | 并行组 | 步骤更新 | 说明 |
 |------|------|-------|--------|----------|------|
-| 0 | 历史学习检查 | - | - | ✅ | 检查插件学习库 |
-| 1 | 需求分析 | `requirement-analyst` | A | ✅ | 分析业务需求、可行性 |
-| 2 | 上下文调研 | `context-researcher` | A | ✅ | 探索相似功能、架构、数据流 |
-| 3 | 影响分析 | `impact-analyzer` | A | ✅ | 评估依赖、风险、回滚方案 |
-| 4 | 实施计划 | - | - | ✅ | 设计技术方案，Git 分支建议 |
-| 5 | 代码开发 | - | - | ✅ | 按计划实现代码 |
-| 6 | 代码审核 | `code-reviewer` | B | ✅ | 检查 Bug、质量、规范 |
-| 7 | 测试验证 | `tester` | B | ✅ | 单元/集成/E2E 测试 |
-| 8 | 学习记录 | - | - | ✅ | 提取和记录学习，Git 提交建议 |
+| 0 | 历史学习检查 | - | - | - | 检查插件学习库 |
+| 1 | 需求分析 | `requirement-analyst` | A | ⚠️ 必须在开始时执行 | 分析业务需求、可行性 |
+| 2 | 上下文调研 | `context-researcher` | A | ⚠️ 必须在开始时执行 | 探索相似功能、架构、数据流 |
+| 3 | 影响分析 | `impact-analyzer` | A | ⚠️ 必须在开始时执行 | 评估依赖、风险、回滚方案 |
+| 4 | 实施计划 | - | - | ⚠️ 必须在开始时执行 | 设计技术方案，Git 分支建议 |
+| 5 | 代码开发 | - | - | ⚠️ 必须在开始时执行 | 按计划实现代码 |
+| 6 | 代码审核 | `code-reviewer` | B | ⚠️ 必须在开始时执行 | 检查 Bug、质量、规范 |
+| 7 | 测试验证 | `tester` | B | ⚠️ 必须在开始时执行 | 单元/集成/E2E 测试 |
+| 8 | 学习记录 | - | - | - | 提取和记录学习，Git 提交建议 |
 
 ### 新增特性
 
 | 特性 | 说明 |
 |------|------|
 | **任务分级** | 自动检测任务复杂度，适配流程 |
-| **自动步骤流转** | 每个 skill 完成后自动更新 `.workflow-step` |
+| **强制步骤更新** | 每个 skill **必须在开始时**更新 `.workflow-step` |
 | **智能学习提取** | Stop 钩子自动生成学习点草稿 |
 | **Git 集成** | 步骤4建议分支，步骤8建议提交 |
 
@@ -139,25 +139,25 @@ cat ~/.claude/plugins/dev-workflow/data/errors.md
 并行启动三个 subagents:
 
 1. requirement-analyst
+   - ⚠️ 第一步：echo "1" > task/.workflow-step （必须）
    - 读取需求文档
    - 拆解功能点
    - 识别模糊点
    - 输出: requirement-report.md
-   - 自动更新: .workflow-step → 1
 
 2. context-researcher
+   - ⚠️ 第一步：echo "2" > task/.workflow-step （必须）
    - 搜索相似功能
    - 分析架构
    - 追踪数据流
    - 输出: context-report.md
-   - 自动更新: .workflow-step → 2
 
 3. impact-analyzer
+   - ⚠️ 第一步：echo "3" > task/.workflow-step （必须）
    - 扫描依赖
    - 评估风险
    - 规划回滚
    - 输出: impact-report.md
-   - 自动更新: .workflow-step → 3
 ```
 
 **并行调用方式**:
@@ -200,12 +200,12 @@ Agent 工具调用:
 **依赖**: 步骤 1-3 的报告
 
 ```
-1. 读取 requirement-report.md
-2. 读取 context-report.md
-3. 读取 impact-report.md
-4. 设计技术方案
-5. 输出: plan-report.md
-6. 自动更新: .workflow-step → 4
+1. ⚠️ 第一步：echo "4" > task/.workflow-step （必须）
+2. 读取 requirement-report.md
+3. 读取 context-report.md
+4. 读取 impact-report.md
+5. 设计技术方案
+6. 输出: plan-report.md
 7. ⚠️ 等待用户确认方案
 8. Git 分支建议（如在 main/master）
 ```
@@ -214,12 +214,10 @@ Agent 工具调用:
 
 **依赖**: 步骤 4 用户确认
 
-```bash
-# 自动更新工作流状态
-echo "5" > task/$(cat task/.current-task)/.workflow-step
-
-# 按计划实现代码
-# 参考: skills/code-development/SKILL.md
+```
+1. ⚠️ 第一步：echo "5" > task/.workflow-step （必须）
+2. 按计划实现代码
+3. 参考: skills/code-development/SKILL.md
 ```
 
 ### 步骤 6-7: 验证阶段（并行执行）
@@ -230,16 +228,16 @@ echo "5" > task/$(cat task/.current-task)/.workflow-step
 并行启动两个 subagents:
 
 1. code-reviewer
+   - ⚠️ 第一步：echo "6" > task/.workflow-step （必须）
    - 审核代码质量
    - 检查安全问题
    - 输出: review-report.md
-   - 自动更新: .workflow-step → 6
 
 2. tester
+   - ⚠️ 第一步：echo "7" > task/.workflow-step （必须）
    - 设计测试用例
    - 执行测试
    - 输出: test-plan.md, test-cases.md, test-report.md
-   - 自动更新: .workflow-step → 7
 ```
 
 **⚠️ 验证失败处理（迭代循环）**:

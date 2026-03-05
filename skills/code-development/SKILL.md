@@ -17,6 +17,16 @@ user-invokable: true
 
 ## 执行流程
 
+### ⚠️ 步骤 0: 立即更新工作流状态（必须）
+
+**在开始任何操作前，必须先更新工作流步骤！**
+
+```bash
+echo "5" > task/$(cat task/.current-task)/.workflow-step
+```
+
+这确保钩子知道当前正在执行步骤 5。
+
 ### 步骤 1: 前置检查
 
 ```bash
@@ -27,15 +37,7 @@ cat task/{当前任务}/plan-report.md
 # 只修改 plan-report.md 中指定的文件
 ```
 
-### 步骤 2: 更新工作流状态
-
-**开始代码开发时，自动更新工作流步骤**：
-
-```bash
-echo "5" > task/$(cat task/.current-task)/.workflow-step
-```
-
-### 步骤 3: 按层次实现
+### 步骤 2: 按层次实现
 
 按以下顺序实现代码：
 

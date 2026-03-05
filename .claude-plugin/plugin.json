@@ -1,7 +1,7 @@
 {
   "name": "dev-workflow",
-  "version": "2.1.0",
-  "description": "Claude Code 开发工作流增强插件 - 结构化的9步开发流程，支持任务分级、自动步骤流转、智能学习提取和 Git 集成",
+  "version": "2.1.1",
+  "description": "Claude Code 开发工作流增强插件 - 结构化的9步开发流程，支持任务分级、强制步骤流转、智能学习提取和 Git 集成",
   "author": {
     "name": "longyi"
   },

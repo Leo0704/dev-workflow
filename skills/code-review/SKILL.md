@@ -17,6 +17,16 @@ user-invokable: true
 
 ## 执行流程
 
+### ⚠️ 步骤 0: 立即更新工作流状态（必须）
+
+**在开始任何操作前，必须先更新工作流步骤！**
+
+```bash
+echo "6" > task/$(cat task/.current-task)/.workflow-step
+```
+
+这确保钩子知道当前正在执行步骤 6。
+
 ### 步骤 1: 获取变更文件
 
 ```bash
@@ -25,15 +35,7 @@ git status
 git diff --name-only
 ```
 
-### 步骤 2: 更新工作流状态
-
-**开始代码审核时，自动更新工作流步骤**：
-
-```bash
-echo "6" > task/$(cat task/.current-task)/.workflow-step
-```
-
-### 步骤 3: 逐文件审核
+### 步骤 2: 逐文件审核
 
 对每个修改的文件进行审核：
 

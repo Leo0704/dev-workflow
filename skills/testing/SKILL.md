@@ -17,6 +17,16 @@ user-invokable: true
 
 ## 执行流程
 
+### ⚠️ 步骤 0: 立即更新工作流状态（必须）
+
+**在开始任何操作前，必须先更新工作流步骤！**
+
+```bash
+echo "7" > task/$(cat task/.current-task)/.workflow-step
+```
+
+这确保钩子知道当前正在执行步骤 7。
+
 ### 步骤 1: 制定测试计划
 
 ```bash
@@ -27,15 +37,7 @@ cat task/{当前任务}/plan-report.md
 cat skills/testing/templates/test-plan.md
 ```
 
-### 步骤 2: 更新工作流状态
-
-**开始测试验证时，自动更新工作流步骤**：
-
-```bash
-echo "7" > task/$(cat task/.current-task)/.workflow-step
-```
-
-### 步骤 3: 编写测试用例
+### 步骤 2: 编写测试用例
 
 使用模板: `templates/test-cases.md`
 

@@ -38,7 +38,7 @@ git clone https://github.com/Leo0704/dev-workflow.git ~/.claude/plugins/dev-work
 
 ### 自动步骤流转
 
-每个 skill 完成后自动更新 `.workflow-step`，无需手动维护。
+每个 skill **必须在开始时**更新 `.workflow-step`，确保钩子能正确检查流程状态。
 
 ### 智能学习提取
 

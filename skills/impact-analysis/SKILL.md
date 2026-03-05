@@ -17,6 +17,16 @@ user-invokable: true
 
 ## 执行流程
 
+### ⚠️ 步骤 0: 立即更新工作流状态（必须）
+
+**在开始任何操作前，必须先更新工作流步骤！**
+
+```bash
+echo "3" > task/$(cat task/.current-task)/.workflow-step
+```
+
+这确保钩子知道当前正在执行步骤 3。
+
 ### 步骤 1: 依赖扫描
 
 ```bash
@@ -52,14 +62,6 @@ cat skills/impact-analysis/templates/impact-report.md
 
 # 填充后保存到
 task/{当前任务}/impact-report.md
-```
-
-### 步骤 5: 更新工作流状态
-
-**完成影响分析后，自动更新工作流步骤**：
-
-```bash
-echo "3" > task/$(cat task/.current-task)/.workflow-step
 ```
 
 ---
